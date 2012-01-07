@@ -4,12 +4,15 @@ import flash.display.StageAlign;
 import flash.display.StageScaleMode;
 import flash.events.Event;
 import flash.utils.getTimer;
+import flash.utils.setTimeout;
+
 import net.bigpoint.utils.benchmark.BenchMark;
 
 /**
  * ...
  * @author Deril (raima156@yahoo.com)
  */
+[SWF(backgroundColor="#FFFFFF", frameRate="50", width="800", height="600")]
 public class RobotTest extends Sprite {
 	
 	public var initTime:int;
@@ -25,9 +28,16 @@ public class RobotTest extends Sprite {
 	
 	private function init(event:Event = null):void {
 		removeEventListener(Event.ADDED_TO_STAGE, init);
-		//
+		
 		stage.scaleMode = StageScaleMode.NO_SCALE;
 		stage.align = StageAlign.TOP_LEFT;
+		
+		// vm warm up:
+		setTimeout(start, 2000);
+	}
+	
+	private function start():void
+	{
 		//
 		//this.addChild(new Stats());
 		//BenchMark.monitor(this.stage);

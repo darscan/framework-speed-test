@@ -6,12 +6,12 @@ import org.robotlegs.mvcs.Command;
  * ...
  * @author Deril (raima156@yahoo.com)
  */
-public class RobotWithModelCommand extends Command {
+public class RobotWithModelCommand {
 	
 	[Inject]
 	public var mockModel:MockModel;
 	
-	override public function execute():void {
+	public function execute():void {
 		//trace( "RobotWithModelCommand.execute" );
 	}
 

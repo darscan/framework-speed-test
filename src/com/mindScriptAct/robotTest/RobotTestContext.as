@@ -7,14 +7,15 @@ import com.mindScriptAct.commons.constants.TestNames;
 import com.mindScriptAct.commons.view.TestSprite;
 import com.mindScriptAct.robotTest.controller.testing.RobotEmptyCommand;
 import com.mindScriptAct.robotTest.controller.testing.RobotGetParamsCommand;
-import com.mindScriptAct.robotTest.controller.testing.RobotWithModelCommand;
 import com.mindScriptAct.robotTest.controller.testing.RobotWithModelCommViewsCommand;
+import com.mindScriptAct.robotTest.controller.testing.RobotWithModelCommand;
 import com.mindScriptAct.robotTest.controller.testing.TestEvent;
 import com.mindScriptAct.robotTest.model.mock.MockModel;
 import com.mindScriptAct.robotTest.view.application.MediatorTestEvent;
 import com.mindScriptAct.robotTest.view.application.OutputEvent;
 import com.mindScriptAct.robotTest.view.application.RobotTestMediator;
 import com.mindScriptAct.robotTest.view.testSprite.RobotTestSpriteMediator;
+
 import flash.display.DisplayObjectContainer;
 import flash.events.Event;
 import flash.events.TextEvent;
@@ -23,6 +24,7 @@ import flash.sampler.NewObjectSample;
 import flash.system.Capabilities;
 import flash.system.System;
 import flash.utils.getTimer;
+
 import org.robotlegs.mvcs.Context;
 
 /**
@@ -31,6 +33,7 @@ import org.robotlegs.mvcs.Context;
  */
 public class RobotTestContext extends Context {
 	private var performanceTest:PerformanceTest;
+	private var coreInitTime:int;
 	
 	public function RobotTestContext(contextView:DisplayObjectContainer){
 		super(contextView);
@@ -39,7 +42,7 @@ public class RobotTestContext extends Context {
 	override public function startup():void {
 		//trace("CoreTestContext.startup");
 		
-		var coreInitTime:int = getTimer() - (contextView as RobotTest).initTime;
+		coreInitTime = getTimer() - (contextView as RobotTest).initTime;
 		
 		// controller
 		commandMap.mapEvent(TestEvent.CALL_COMMANDS_EMPTY, RobotEmptyCommand);
@@ -67,7 +70,9 @@ public class RobotTestContext extends Context {
 	private function prepareTests():void {
 		
 		performanceTest = new PerformanceTest();
-		performanceTest.delay = 1;
+		// there needs to be some cool down time between tests
+		// the default is 50 with advice to turn it up for "a series of high intensity tests", not down
+		performanceTest.delay = 60;
 		
 		performanceTest.queueSimpleTest(eventDispatcher.dispatchEvent, [new TestEvent(TestEvent.CALL_COMMANDS_EMPTY)], TestNames.COMMAND_EMPTY, 50, 3000);
 		performanceTest.queueSimpleTest(eventDispatcher.dispatchEvent, [new TestEvent(TestEvent.CALL_COMMANDS_GET_PARAMS, "testData")], TestNames.COMMAND_PARAMS, 50, 3000);
@@ -111,11 +116,13 @@ public class RobotTestContext extends Context {
 	}
 	
 	private function handleTestClose(event:Event):void {
+		var taken:Number = (getTimer() - coreInitTime) / 1000;
 		//trace( "RobotTestContext.handleTestClose > event : " + event );
 		for (var i:int = 0; i < 1000; i++){
 			eventDispatcher.dispatchEvent(new MediatorTestEvent(MediatorTestEvent.REMOVE_TEST_VIEW, 1));
 		}
 		dispatchEvent(new OutputEvent(OutputEvent.APPEND_LINE, "ALL TESTS DONE"));
+		dispatchEvent(new OutputEvent(OutputEvent.APPEND_LINE, "IN: " + taken.toFixed(2)));
 	}
 	
 	private function handleTestComplete(event:Event):void {
